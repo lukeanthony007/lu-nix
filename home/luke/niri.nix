@@ -1,18 +1,4 @@
 { inputs, pkgs, ... }:
-let
-  patchedDmsPackage = inputs.dms.packages.${pkgs.stdenv.hostPlatform.system}.dms-shell.overrideAttrs (
-    old: {
-      postInstall =
-        (old.postInstall or "")
-        + ''
-          substituteInPlace $out/share/quickshell/dms/Modules/DankBar/DankBarWindow.qml \
-            --replace-fail \
-            'exclusiveZone: (!(barConfig?.visible ?? true) || topBarCore.autoHide) ? -1 : (barWindow.effectiveBarThickness + effectiveSpacing + (barConfig?.bottomGap ?? 0))' \
-            'exclusiveZone: (!(barConfig?.visible ?? true) || topBarCore.autoHide) ? -1 : (CompositorService.isNiri && !barWindow.isVertical ? 15 : (barWindow.effectiveBarThickness + effectiveSpacing + (barConfig?.bottomGap ?? 0)))'
-        '';
-    }
-  );
-in
 {
   home.packages = with pkgs; [
     firefox
@@ -79,17 +65,11 @@ in
     input.keyboard.xkb.layout = "us";
 
     layout = {
-      gaps = 4;
+      gaps = 10;
       border.enable = false;
       focus-ring = {
         enable = true;
         width = 2;
-      };
-      struts = {
-        top = 0;
-        bottom = 0;
-        left = 0;
-        right = 0;
       };
     };
 
@@ -100,8 +80,7 @@ in
         matches = [{ app-id = "^foot$"; }];
         opacity = 0.75;
         draw-border-with-background = false;
-        default-column-display = "tabbed";
-        open-maximized = true;
+        default-column-width.proportion = 1.0;
       }
       {
         matches = [{ app-id = "^org\\.gnome\\.Nautilus$"; }];
@@ -189,21 +168,11 @@ in
 
   programs.dank-material-shell = {
     enable = true;
-    package = patchedDmsPackage;
     systemd.enable = true;
     niri = {
       enableKeybinds = true;
       enableSpawn = false;
-      includes = {
-        enable = true;
-        filesToInclude = [
-          "alttab"
-          "binds"
-          "colors"
-          "outputs"
-          "wpblur"
-        ];
-      };
+      includes.enable = true;
     };
     settings = builtins.fromJSON (builtins.readFile ./dms-settings.json);
   };
@@ -230,7 +199,7 @@ in
     script = pkgs.writeShellScript "random-wallpaper" ''
       dir="$HOME/Pictures/Wallpapers"
       [ -d "$dir" ] || exit 0
-      wallpaper=$(${pkgs.findutils}/bin/find "$dir" -maxdepth 2 -not -path '*/.git*' -type f \( -name '*.jpg' -o -name '*.png' -o -name '*.avif' -o -name '*.webp' \) -size +100k | ${pkgs.coreutils}/bin/shuf -n 1)
+      wallpaper=$(${pkgs.findutils}/bin/find "$dir" -type f \( -name '*.jpg' -o -name '*.png' -o -name '*.avif' -o -name '*.webp' \) | ${pkgs.coreutils}/bin/shuf -n 1)
       [ -n "$wallpaper" ] || exit 0
       exec dms ipc wallpaper set "$wallpaper"
     '';
@@ -251,10 +220,7 @@ in
 
   systemd.user.services.foot-autostart = {
     Unit = {
-      After = [
-        "graphical-session.target"
-        "dms.service"
-      ];
+      After = ["graphical-session.target"];
       Description = "Launch foot on session start";
       PartOf = ["graphical-session.target"];
     };
