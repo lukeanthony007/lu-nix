@@ -68,26 +68,7 @@
       enableSpawn = true;
       includes.enable = true;
     };
-    settings = {
-      currentThemeName = "tokyonight";
-      currentThemeCategory = "generic";
-      matugenScheme = "scheme-tonal-spot";
-      use24HourClock = true;
-      cornerRadius = 12;
-      popupTransparency = 0.95;
-      dockTransparency = 0.9;
-      m3ElevationEnabled = true;
-      enableRippleEffects = true;
-      showWeather = false;
-      showBattery = false;
-      showCpuUsage = true;
-      showMemUsage = true;
-      showCpuTemp = true;
-      showGpuTemp = false;
-      showMusic = true;
-      showClipboard = true;
-      showSystemTray = true;
-    };
+    settings = builtins.fromJSON (builtins.readFile ./dms-settings.json);
   };
 
   programs.dsearch = {
