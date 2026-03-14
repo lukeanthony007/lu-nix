@@ -72,10 +72,10 @@
         width = 2;
       };
       struts = {
-        top = 4;
-        bottom = 4;
-        left = 4;
-        right = 4;
+        top = 0;
+        bottom = 0;
+        left = 0;
+        right = 0;
       };
     };
 
