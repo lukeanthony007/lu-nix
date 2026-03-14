@@ -79,10 +79,13 @@
       };
     };
 
+    prefer-no-csd = true;
+
     window-rules = [
       {
         matches = [{ app-id = "^foot$"; }];
         opacity = 0.75;
+        draw-border-with-background = false;
       }
       {
         matches = [{ app-id = "^org\\.gnome\\.Nautilus$"; }];
