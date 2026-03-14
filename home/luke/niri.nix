@@ -32,7 +32,7 @@
         font = "monospace:size=11";
         pad = "8x8";
       };
-      colors = {
+      colors-dark = {
         alpha = "0.92";
         background = "1a1b26";
         foreground = "c0caf5";

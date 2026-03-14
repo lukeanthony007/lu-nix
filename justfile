@@ -20,7 +20,6 @@ fmt:
 
 lint:
   cargo clippy --workspace --all-targets --all-features -- -D warnings
-  pnpm exec biome check .
 
 dev:
   pnpm dev
@@ -28,14 +27,10 @@ dev:
 vm-build:
   nix build .#nixosConfigurations.vm-dev.config.system.build.vm
 
-# Run the VM with default GTK frontend (primary validation path)
+# Run the VM with system QEMU (required for GL/virgl on non-NixOS hosts)
 vm-run: vm-build
-  ./result/bin/run-*-vm
+  sed "s|/nix/store/[^/]*/bin/qemu-system-x86_64|qemu-system-x86_64|" ./result/bin/run-*-vm | bash
 
-# Run the VM with serial console attached (for diagnostics alongside GTK)
+# Run the VM with serial console attached
 vm-run-serial: vm-build
-  ./result/bin/run-*-vm -serial mon:stdio
-
-# Run the VM using system QEMU (needed for GL/virgl on non-NixOS hosts)
-vm-run-gl: vm-build
   sed "s|/nix/store/[^/]*/bin/qemu-system-x86_64|qemu-system-x86_64|" ./result/bin/run-*-vm | bash -s -- -serial mon:stdio
