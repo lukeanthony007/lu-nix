@@ -65,7 +65,7 @@
     input.keyboard.xkb.layout = "us";
 
     layout = {
-      gaps = 10;
+      gaps = 4;
       border.enable = false;
       focus-ring = {
         enable = true;
