@@ -178,7 +178,16 @@
     niri = {
       enableKeybinds = true;
       enableSpawn = false;
-      includes.enable = true;
+      includes = {
+        enable = true;
+        filesToInclude = [
+          "alttab"
+          "binds"
+          "colors"
+          "outputs"
+          "wpblur"
+        ];
+      };
     };
     settings = builtins.fromJSON (builtins.readFile ./dms-settings.json);
   };
