@@ -163,6 +163,8 @@
       "Mod+WheelScrollUp".action.focus-workspace-up = {};
       "Mod+Shift+WheelScrollDown".action.focus-column-right = {};
       "Mod+Shift+WheelScrollUp".action.focus-column-left = {};
+      "Shift+WheelScrollDown".action.focus-column-right = {};
+      "Shift+WheelScrollUp".action.focus-column-left = {};
 
       "Print".action.screenshot = {};
       "Ctrl+Print".action.screenshot-screen = {};
