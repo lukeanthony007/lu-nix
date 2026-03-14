@@ -105,7 +105,7 @@
     in {
       "Mod+Return".action.spawn = ["foot"];
       "Mod+T".action.spawn = ["foot"];
-      "Mod+X".action.close-window = {};
+      "Alt+F4".action.close-window = {};
 
       "Mod+Left".action.focus-column-left = {};
       "Mod+Right".action.focus-column-right = {};
