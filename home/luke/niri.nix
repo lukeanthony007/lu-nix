@@ -1,19 +1,47 @@
 { inputs, pkgs, ... }:
 {
   home.packages = with pkgs; [
+    bun
+    claude-code
+    codex
+    btop
+    deluge-gtk
     discord
+    dolphin-emu
+    fastfetch
     foot
+    gamescope
     git
+    imv
+    mangohud
+    mpv
     inputs.zen-browser.packages.${pkgs.system}.default
     gnome-text-editor
     nautilus
     nerd-fonts.jetbrains-mono
+    obsidian
+    p7zip
     pavucontrol
-    retroarch
+    pcsx2
+    protonup-qt
+    qemu
+    rclone
+    signal-desktop
+    (retroarch.withCores (cores: with cores; [
+      beetle-psx-hw    # PS1
+      fceumm           # NES
+      flycast          # Dreamcast
+      mgba             # GBA
+      mupen64plus      # N64
+      ppsspp           # PSP
+      snes9x           # SNES
+    ]))
     spotify
     starship
+    unzip
     vscode
     wl-clipboard
+    zoom-us
   ];
 
   xdg.userDirs = {
@@ -46,6 +74,50 @@
       set fish_greeting
       starship init fish | source
     '';
+  };
+
+  home.activation.retroarchConfig = ''
+    cfg="$HOME/.config/retroarch/retroarch.cfg"
+    if [ ! -f "$cfg" ]; then
+      mkdir -p "$(dirname "$cfg")"
+      cat > "$cfg" << 'RACFG'
+menu_driver = "xmb"
+menu_wallpaper_opacity = "1.000000"
+menu_framebuf_enable = "true"
+xmb_menu_color_theme = "20"
+xmb_theme = "0"
+xmb_alpha_factor = "95"
+RACFG
+    fi
+  '';
+
+  home.activation.vscodeSettings = ''
+    mkdir -p "$HOME/.config/Code/User"
+    cp -f ${./vscode-settings.json} "$HOME/.config/Code/User/settings.json"
+    chmod 644 "$HOME/.config/Code/User/settings.json"
+  '';
+
+  systemd.user.services.vscode-extensions = {
+    Unit = {
+      Description = "Install VS Code extensions";
+      After = ["graphical-session.target"];
+    };
+    Install.WantedBy = ["graphical-session.target"];
+    Service = {
+      Type = "oneshot";
+      ExecStart = let
+        extensions = [
+          "andrsdc.base16-themes"
+          "anthropic.claude-code"
+          "beardedbear.beardedtheme"
+          "jnoortheen.nix-ide"
+          "openai.chatgpt"
+          "skellock.just"
+          "usernamehw.errorlens"
+        ];
+        cmds = builtins.concatStringsSep " && " (map (ext: "${pkgs.vscode}/bin/code --install-extension ${ext}") extensions);
+      in "${pkgs.bash}/bin/bash -c '${cmds} || true'";
+    };
   };
 
   xdg.configFile."starship.toml".source = ./starship.toml;
@@ -144,6 +216,7 @@
       {
         geometry-corner-radius = let r = 12.0; in { bottom-left = r; bottom-right = r; top-left = r; top-right = r; };
         clip-to-geometry = true;
+        default-column-width.proportion = 1.0;
       }
       {
         matches = [{ app-id = "^foot$"; }];
