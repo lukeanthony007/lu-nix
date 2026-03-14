@@ -1,0 +1,10 @@
+.direnv/
+.DS_Store
+.envrc.local
+.idea/
+.vscode/
+coverage/
+dist/
+node_modules/
+result
+target/

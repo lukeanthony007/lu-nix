@@ -1,0 +1,10 @@
+{
+  "name": "@lu-nix/web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "check": "tsc --project tsconfig.json --noEmit",
+    "dev": "tsx watch src/index.ts"
+  }
+}
