@@ -139,8 +139,8 @@
   "focusedWindowCompactMode": true,
   "runningAppsCompactMode": true,
   "keyboardLayoutNameCompactMode": false,
-  "runningAppsCurrentWorkspace": false,
-  "runningAppsGroupByApp": false,
+  "runningAppsCurrentWorkspace": true,
+  "runningAppsGroupByApp": true,
   "appIdSubstitutions": [
     {
       "pattern": "Spotify",
