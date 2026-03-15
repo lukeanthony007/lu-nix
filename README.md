@@ -12,16 +12,17 @@
 
 ```text
 .
-├── apps/web
-├── crates/core
 ├── flake.nix
 ├── home/luke
+│   ├── default.nix       # Core profile (shell, git, editors)
+│   ├── desktop.nix       # Graphical environment (niri, DMS, foot, vscode)
+│   ├── gaming.nix        # RetroArch, emulators, gamescope
+│   ├── productivity.nix  # Discord, Spotify, Signal, Obsidian
 │   ├── dms.nix
 │   ├── editors.nix
 │   ├── foot.nix
 │   ├── git.nix
 │   ├── niri.nix
-│   ├── packages.nix
 │   ├── services.nix
 │   ├── shell.nix
 │   └── vscode.nix
@@ -31,23 +32,76 @@
 │   └── vm-dev
 ├── justfile
 ├── modules
-│   ├── default.nix
+│   ├── default.nix       # All groups (convenience)
+│   ├── core.nix          # base + users + ssh
+│   ├── graphical.nix     # audio, DMS, fonts, niri
+│   ├── development.nix   # Rust toolchain, Node/pnpm runtime
 │   ├── base.nix
-│   ├── desktop
-│   ├── dev
-│   ├── services
-│   └── users
+│   ├── desktop/
+│   ├── dev/
+│   ├── services/
+│   └── users/
+├── apps/web
+├── crates/core
 ├── package.json
 └── pnpm-workspace.yaml
 ```
 
+## Architecture
+
+### System modules — composable groups
+
+Hosts import the groups they need:
+
+| Group | File | Includes |
+|---|---|---|
+| Core | `modules/core.nix` | base system, user accounts, SSH |
+| Graphical | `modules/graphical.nix` | niri, DMS, audio, fonts |
+| Development | `modules/development.nix` | Rust toolchain, Node/pnpm runtime |
+
+`modules/default.nix` imports all three for convenience. Hosts can import selectively:
+
+```nix
+# Full workstation (current hosts)
+imports = [ ../../modules ];
+
+# Future headless server
+imports = [ ../../modules/core.nix ];
+
+# Graphical but no dev tools
+imports = [ ../../modules/core.nix ../../modules/graphical.nix ];
+```
+
+### Home profiles — per-host composition
+
+`home/luke/default.nix` is the core profile (shell, git, editors) loaded for every host. Additional profiles are composed per-host via `mkHost`:
+
+```nix
+nixosConfigurations.vm-dev = mkHost {
+  path = ./hosts/vm-dev;
+  homeModules = [ ./home/luke/desktop.nix ];
+};
+nixosConfigurations.desktop = mkHost {
+  path = ./hosts/desktop;
+  homeModules = [
+    ./home/luke/desktop.nix
+    ./home/luke/gaming.nix
+    ./home/luke/productivity.nix
+  ];
+};
+```
+
+### Dev tooling — no duplication
+
+The `nix develop` shell provides the full dev workflow (cargo helpers, LSP servers, linters, formatters). System-level `modules/dev/*` only installs what the NixOS host needs to build and run (toolchain, linker, build deps). No overlap.
+
 ## What exists today
 
 - A `nix develop` shell for Rust stable, Rust 2024, Node LTS, and `pnpm`.
-- `nixosConfigurations.vm-dev` as the primary NixOS VM target.
-- `nixosConfigurations.desktop` as the real-hardware target with Steam, Jellyfin, and Home Assistant.
-- Shared NixOS modules for base system setup, Niri, DankMaterialShell, audio, Docker, SSH, Rust, and TypeScript.
-- Home Manager configuration for the `luke` user, including Niri, DMS, foot, VS Code, fish, and starship.
+- `nixosConfigurations.vm-dev` as the primary NixOS VM target (desktop profile).
+- `nixosConfigurations.desktop` as the real-hardware target (desktop + gaming + productivity, with Steam, Jellyfin, and Home Assistant).
+- Composable NixOS modules: core, graphical, and development groups.
+- Composable Home Manager profiles: core, desktop, gaming, and productivity.
 - A placeholder `hosts/laptop` tree for future hardware-specific work.
 
 ## Bootstrap
@@ -61,23 +115,10 @@
 ## VM workflow
 
 1. Build the VM target: `just vm-build`
-2. Run the generated VM launcher from `./result/bin/`
+2. Run the generated VM launcher: `just vm-run`
 3. Log in as `luke`
 
 The VM user currently has the bootstrap password `luke`. That is acceptable for a disposable VM target and should be changed before any non-VM deployment work.
-
-## Validation goals for `vm-dev`
-
-- Boot succeeds
-- Greetd login succeeds
-- Niri session starts
-- Terminal and browser launch
-- Network is available
-- PipeWire audio stack is present
-- Clipboard tools are available
-- Portals are enabled
-- Rust and TypeScript toolchains are installed
-- Docker is enabled
 
 ## Notes
 

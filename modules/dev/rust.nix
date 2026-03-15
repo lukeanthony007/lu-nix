@@ -10,16 +10,11 @@
   };
 
   environment.systemPackages = with pkgs; [
-    bacon
-    cargo-deny
-    cargo-edit
-    cargo-nextest
     llvmPackages_latest.clang
     llvmPackages_latest.lld
     openssl
     pkg-config
     rustToolchain
     sqlite
-    watchexec
   ];
 }

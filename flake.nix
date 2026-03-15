@@ -123,7 +123,7 @@
       rustToolchain = mkRustToolchain pkgs;
       nodejs = mkNodejs pkgs;
 
-      mkHost = hostPath:
+      mkHost = { path, homeModules ? [] }:
         nixpkgs.lib.nixosSystem {
           inherit system;
 
@@ -136,7 +136,7 @@
             inputs.dms.nixosModules.dank-material-shell
             inputs.dms.nixosModules.greeter
             home-manager.nixosModules.home-manager
-            hostPath
+            path
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
@@ -149,12 +149,26 @@
               home-manager.extraSpecialArgs = {
                 inherit inputs nodejs rustToolchain self;
               };
-              home-manager.users.luke = import ./home/luke;
+              home-manager.users.luke = {
+                imports = [ ./home/luke ] ++ homeModules;
+              };
             }
           ];
         };
     in {
-      nixosConfigurations.vm-dev = mkHost ./hosts/vm-dev/default.nix;
-      nixosConfigurations.desktop = mkHost ./hosts/desktop/default.nix;
+      nixosConfigurations.vm-dev = mkHost {
+        path = ./hosts/vm-dev;
+        homeModules = [
+          ./home/luke/desktop.nix
+        ];
+      };
+      nixosConfigurations.desktop = mkHost {
+        path = ./hosts/desktop;
+        homeModules = [
+          ./home/luke/desktop.nix
+          ./home/luke/gaming.nix
+          ./home/luke/productivity.nix
+        ];
+      };
     });
 }
