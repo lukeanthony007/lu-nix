@@ -66,24 +66,21 @@ Item {
                             border.color: Qt.rgba(1, 1, 1, 0.8)
                             color: Qt.rgba(1, 1, 1, 0.05)
 
-                            Rectangle {
+                            // Use layer rendering for true rounded clipping
+                            layer.enabled: true
+
+                            Image {
                                 anchors.fill: parent
                                 anchors.margins: parent.border.width
-                                radius: parent.border.width > 0 ? 9 : 12
-                                clip: true
+                                source: "file://" + modelData
+                                fillMode: Image.PreserveAspectCrop
+                                asynchronous: true
+                                sourceSize.width: 240
+                                sourceSize.height: 160
 
-                                Image {
-                                    anchors.fill: parent
-                                    source: "file://" + modelData
-                                    fillMode: Image.PreserveAspectCrop
-                                    asynchronous: true
-                                    sourceSize.width: 240
-                                    sourceSize.height: 160
-
-                                    onStatusChanged: {
-                                        if (status === Image.Error)
-                                            console.warn("Failed to load: " + source)
-                                    }
+                                onStatusChanged: {
+                                    if (status === Image.Error)
+                                        console.warn("Failed to load: " + source)
                                 }
                             }
 
