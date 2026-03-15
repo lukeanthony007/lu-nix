@@ -6,7 +6,6 @@
     layer-rules = [
       {
         matches = [{ namespace = "^quickshell"; }];
-        opacity = 0.8;
       }
     ];
 

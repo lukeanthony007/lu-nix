@@ -5,9 +5,12 @@ import Quickshell.Io
 Item {
     anchors.fill: parent
 
+    property bool compact: parent.width < 700
+    property bool tiny: parent.width < 500
+
     ColumnLayout {
         anchors.centerIn: parent
-        width: Math.min(parent.width - 160, 600)
+        width: Math.min(parent.width - (tiny ? 40 : compact ? 80 : 160), 700)
         spacing: 0
 
         // Title
@@ -15,15 +18,15 @@ Item {
             Layout.alignment: Qt.AlignHCenter
             text: "Welcome to lu-nix"
             color: "white"
-            font.pixelSize: 32
+            font.pixelSize: tiny ? 22 : compact ? 28 : 36
             font.weight: Font.Bold
         }
         Text {
             Layout.alignment: Qt.AlignHCenter
-            Layout.bottomMargin: 40
+            Layout.bottomMargin: compact ? 20 : 40
             text: "Setting up your system"
             color: Qt.rgba(1, 1, 1, 0.5)
-            font.pixelSize: 16
+            font.pixelSize: tiny ? 12 : 16
         }
 
         // Task list card
@@ -126,9 +129,13 @@ Item {
                     font.weight: Font.Medium
                 }
 
-                Row {
+                Flow {
                     Layout.alignment: Qt.AlignHCenter
+                    Layout.fillWidth: true
+                    Layout.leftMargin: 16
+                    Layout.rightMargin: 16
                     spacing: 12
+                    flow: Flow.LeftToRight
 
                     Repeater {
                         model: [
@@ -138,7 +145,8 @@ Item {
                         ]
 
                         Rectangle {
-                            width: 160; height: 44
+                            width: compact ? Math.min(160, (parent.width - 24) / 3) : 160
+                            height: 44
                             radius: 12
                             color: providerMa.containsMouse ? Qt.rgba(1,1,1,0.12) : Qt.rgba(1,1,1,0.06)
                             border.width: 1; border.color: Qt.rgba(1,1,1,0.1)
@@ -208,11 +216,11 @@ Item {
         }
 
         // Debug log
-        Item { Layout.preferredHeight: 16 }
+        Item { Layout.preferredHeight: compact ? 8 : 16 }
 
         GlassCard {
             Layout.fillWidth: true
-            Layout.preferredHeight: 140
+            Layout.preferredHeight: compact ? 100 : 140
 
             Flickable {
                 anchors.fill: parent
