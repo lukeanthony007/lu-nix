@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Effects
 import Quickshell.Io
 
 Item {
@@ -66,10 +67,8 @@ Item {
                             border.color: Qt.rgba(1, 1, 1, 0.8)
                             color: Qt.rgba(1, 1, 1, 0.05)
 
-                            // Use layer rendering for true rounded clipping
-                            layer.enabled: true
-
                             Image {
+                                id: wpImg
                                 anchors.fill: parent
                                 anchors.margins: parent.border.width
                                 source: "file://" + modelData
@@ -77,11 +76,27 @@ Item {
                                 asynchronous: true
                                 sourceSize.width: 240
                                 sourceSize.height: 160
-
                                 onStatusChanged: {
                                     if (status === Image.Error)
                                         console.warn("Failed to load: " + source)
                                 }
+
+                                layer.enabled: true
+                                layer.effect: MultiEffect {
+                                    maskEnabled: true
+                                    maskSource: wpMaskRect
+                                    maskThresholdMin: 0.5
+                                    maskSpreadAtMin: 1.0
+                                }
+                            }
+
+                            Rectangle {
+                                id: wpMaskRect
+                                anchors.fill: wpImg
+                                radius: 12
+                                color: "black"
+                                visible: false
+                                layer.enabled: true
                             }
 
                             Rectangle {
