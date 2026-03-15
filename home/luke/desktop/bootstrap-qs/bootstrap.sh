@@ -1,6 +1,6 @@
 #!/bin/sh
 # Bootstrap task runner — writes JSON status to a file for the QML UI to poll.
-# Downloads wallpapers one at a time via curl so each appears instantly in the picker.
+# Downloads wallpapers one at a time; moves on after first one lands.
 
 STATUS_FILE="$HOME/.local/state/bootstrap-status.json"
 LOG="$HOME/.local/state/bootstrap.log"
@@ -26,12 +26,11 @@ STATUSEOF
 
 # Build wallpaper JSON list from what's on disk
 wp_json_list() {
-    LIST=""
-    find "$WP_DIR" -type f -size +10k \( -name '*.jpg' -o -name '*.png' -o -name '*.jpeg' \) 2>/dev/null | sort -r | head -24 | while IFS= read -r f; do
-        [ -n "$LIST" ] && LIST="$LIST,"
-        LIST="$LIST\"$f\""
-        echo "$LIST"
-    done | tail -1
+    find "$WP_DIR" -type f -size +10k \( -iname '*.jpg' -o -iname '*.png' -o -iname '*.jpeg' -o -iname '*.webp' \) 2>/dev/null | sort | head -24 | awk '{
+        if (NR > 1) printf ","
+        gsub(/"/, "\\\"")
+        printf "\"%s\"", $0
+    }'
 }
 
 write_status "running" "Checking network..." \
@@ -60,48 +59,60 @@ if [ "$HAS_NET" = true ] && [ ! -d "$WP_DIR/.git" ]; then
                  "pending" "Cloud storage" \
                  "0.02" "Fetching wallpaper index..." ""
 
-    # Step 1: Tree-only clone (no file content — just directory structure)
+    # Tree-only clone (no file content — just directory structure)
     git clone --filter=blob:none --sparse --no-checkout --depth 1 \
         "https://github.com/$REPO.git" "$WP_DIR" 2>&1 || true
     echo "[wp] Tree cloned"
 
     if [ -d "$WP_DIR/.git" ]; then
-        # List all folders sorted newest-first (by name convention)
         ALL_FOLDERS=$(git -C "$WP_DIR" ls-tree -d --name-only HEAD 2>/dev/null | grep -v '^\.' | sort -r) || true
         LATEST=$(echo "$ALL_FOLDERS" | head -1)
         echo "[wp] Latest folder: $LATEST"
-        echo "[wp] All folders: $(echo "$ALL_FOLDERS" | wc -l)"
 
         if [ -n "$LATEST" ]; then
-            write_status "running" "Downloading: $LATEST" \
+            TOTAL_FILES=$(git -C "$WP_DIR" ls-tree --name-only HEAD "$LATEST/" 2>/dev/null | grep -ciE '\.(jpg|png|jpeg|webp)$') || TOTAL_FILES=1
+            echo "[wp] Expected files: $TOTAL_FILES"
+
+            write_status "running" "Downloading wallpapers..." \
                          "pending" "Editor configuration" \
                          "pending" "Cloud storage" \
-                         "0.05" "Downloading latest wallpapers..." ""
+                         "0.05" "Downloading wallpapers..." ""
 
-            # Show download progress
-            (while true; do
+            # Download wallpapers one at a time in background (continues after we move on)
+            (git -C "$WP_DIR" ls-tree --name-only HEAD "$LATEST/" 2>/dev/null | grep -iE '\.(jpg|png|jpeg|webp)$' | sort | while IFS= read -r f; do
+                git -C "$WP_DIR" checkout HEAD -- "$f" 2>&1 || continue
+                echo "[wp] Downloaded: $f"
+            done
+            echo "[wp] All wallpapers downloaded") &
+            DL_PID=$!
+
+            # Wait for FIRST wallpaper to land (max 60s), then move on immediately
+            echo "[wp] Waiting for first wallpaper..."
+            for i in $(seq 1 60); do
+                FIRST=$(find "$WP_DIR" -type f -size +10k \( -iname '*.jpg' -o -iname '*.png' -o -iname '*.jpeg' -o -iname '*.webp' \) 2>/dev/null | head -1)
+                if [ -n "$FIRST" ]; then
+                    echo "[wp] First wallpaper ready: $FIRST"
+                    break
+                fi
+                sleep 1
+            done
+
+            # Background ticker keeps updating wallpaper list for the picker screen
+            (while kill -0 "$DL_PID" 2>/dev/null; do
                 sleep 2
-                SIZE=$(du -sh "$WP_DIR" 2>/dev/null | cut -f1) || SIZE="0"
-                write_status "running" "Downloading... $SIZE" \
-                             "pending" "Editor configuration" \
-                             "pending" "Cloud storage" \
-                             "0.10" "Downloading... $SIZE" "$(wp_json_list)"
-            done) &
-            TICK=$!
-
-            # Step 2: Fetch only the latest folder's files
-            git -C "$WP_DIR" sparse-checkout set "$LATEST" 2>&1 || true
-            git -C "$WP_DIR" checkout 2>&1 || true
-
-            kill "$TICK" 2>/dev/null; wait "$TICK" 2>/dev/null || true
-            echo "[wp] Latest folder downloaded"
+                DL=$(find "$WP_DIR" -type f -size +10k \( -iname '*.jpg' -o -iname '*.png' -o -iname '*.jpeg' -o -iname '*.webp' \) 2>/dev/null | wc -l) || DL=0
+                # Update ONLY the wallpapers array in the status file (preserve other fields)
+                WP_LIST=$(wp_json_list)
+                sed -i "s|\"wallpapers\": \[.*\]|\"wallpapers\": [$WP_LIST]|" "$STATUS_FILE" 2>/dev/null || true
+            done
+            echo "[wp] Ticker stopped") &
         fi
     fi
 fi
 
-WP_JSON=$(wp_json_list)
-SELECTED=$(find "$WP_DIR" -type f -size +10k \( -name '*.jpg' -o -name '*.png' -o -name '*.jpeg' \) 2>/dev/null | shuf -n 1) || true
-echo "[wp] Found $(find "$WP_DIR" -type f -size +10k 2>/dev/null | wc -l) wallpapers, selected: $SELECTED"
+# Select random wallpaper from what's available now
+SELECTED=$(find "$WP_DIR" -type f -size +10k \( -iname '*.jpg' -o -iname '*.png' -o -iname '*.jpeg' -o -iname '*.webp' \) 2>/dev/null | shuf -n 1) || true
+echo "[wp] Selected: $SELECTED"
 
 # Write selected wallpaper to DMS session.json
 if [ -n "$SELECTED" ]; then
@@ -114,11 +125,11 @@ if [ -n "$SELECTED" ]; then
     else
         jq -n --arg wp "$SELECTED" '{wallpaperPath: $wp, wallpaperPathDark: $wp, wallpaperPathLight: $wp}' > "$SESSION_FILE"
     fi
-    echo "[wp] Pre-selected wallpaper: $SELECTED"
 fi
 
-DESC1="No wallpapers found"
-[ -n "$SELECTED" ] && DESC1="Wallpapers ready"
+WP_JSON=$(wp_json_list)
+DESC1="Wallpapers ready"
+[ -z "$SELECTED" ] && DESC1="No wallpapers found"
 [ "$HAS_NET" = false ] && [ -z "$SELECTED" ] && DESC1="No network"
 
 write_status "done" "$DESC1" \
@@ -141,7 +152,7 @@ DESC2="NvChad ready"
 write_status "done" "$DESC1" \
              "done" "$DESC2" \
              "running" "Cloud storage..." \
-             "0.66" "Cloud storage..." "$WP_JSON"
+             "0.66" "Cloud storage..." "$(wp_json_list)"
 
 sleep 1
 
@@ -150,12 +161,12 @@ if [ -f "$HOME/.config/rclone/rclone.conf" ]; then
     write_status "done" "$DESC1" \
                  "done" "$DESC2" \
                  "done" "Cloud storage configured" \
-                 "1.0" "done" "$WP_JSON"
+                 "1.0" "done" "$(wp_json_list)"
 else
     write_status "done" "$DESC1" \
                  "done" "$DESC2" \
                  "cloud" "Choose a provider" \
-                 "0.66" "cloud" "$WP_JSON"
+                 "0.66" "cloud" "$(wp_json_list)"
 fi
 
 # Mark DMS first-launch as complete so its greeter doesn't show

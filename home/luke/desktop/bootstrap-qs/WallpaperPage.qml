@@ -62,23 +62,28 @@ Item {
                             Layout.fillWidth: true
                             Layout.preferredHeight: 130
                             radius: 12
-                            clip: true
                             border.width: root.selectedWallpaperIndex === index ? 3 : 0
                             border.color: Qt.rgba(1, 1, 1, 0.8)
                             color: Qt.rgba(1, 1, 1, 0.05)
 
-                            Image {
+                            Rectangle {
                                 anchors.fill: parent
                                 anchors.margins: parent.border.width
-                                source: "file://" + modelData
-                                fillMode: Image.PreserveAspectCrop
-                                asynchronous: true
-                                sourceSize.width: 240
-                                sourceSize.height: 160
+                                radius: parent.border.width > 0 ? 9 : 12
+                                clip: true
 
-                                onStatusChanged: {
-                                    if (status === Image.Error)
-                                        console.warn("Failed to load: " + source)
+                                Image {
+                                    anchors.fill: parent
+                                    source: "file://" + modelData
+                                    fillMode: Image.PreserveAspectCrop
+                                    asynchronous: true
+                                    sourceSize.width: 240
+                                    sourceSize.height: 160
+
+                                    onStatusChanged: {
+                                        if (status === Image.Error)
+                                            console.warn("Failed to load: " + source)
+                                    }
                                 }
                             }
 
@@ -165,7 +170,27 @@ Item {
             interval: 2000
             running: true
             repeat: true
-            onTriggered: wpLogReader.running = true
+            onTriggered: {
+                wpLogReader.running = true;
+                wpScanner.running = true;
+            }
+        }
+
+        // Scan wallpaper directory for new files (downloads continue in background)
+        Process {
+            id: wpScanner
+            running: false
+            command: ["sh", "-c", "find " + root.home + "/Pictures/Wallpapers -type f -size +10k \\( -iname '*.jpg' -o -iname '*.png' -o -iname '*.jpeg' -o -iname '*.webp' \\) 2>/dev/null | sort | head -24"]
+            stdout: SplitParser {
+                splitMarker: ""
+                onRead: data => {
+                    var lines = data.trim().split("\n").filter(function(l) { return l.length > 0; });
+                    // Only update if new files appeared — append to end, never reorder
+                    if (lines.length > root.wallpaperPaths.length) {
+                        root.wallpaperPaths = lines;
+                    }
+                }
+            }
         }
 
         Item { Layout.preferredHeight: 24 }

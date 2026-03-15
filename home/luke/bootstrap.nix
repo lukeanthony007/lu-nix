@@ -8,7 +8,7 @@ let
   statusFile = ".local/state/bootstrap-status.json";
 
   bootstrapApp = pkgs.writeShellScriptBin "lu-nix-bootstrap" ''
-    export PATH="${lib.makeBinPath (with pkgs; [ coreutils findutils git iputils jq ])}:$PATH"
+    export PATH="${lib.makeBinPath (with pkgs; [ coreutils findutils gawk git iputils jq ])}:$PATH"
 
     # Check marker
     [ -f "$HOME/.local/state/bootstrap-done" ] && [ "''${1:-}" != "--force" ] && exit 0
