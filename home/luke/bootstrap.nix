@@ -13,15 +13,33 @@ let
     # Check marker
     [ -f "$HOME/.local/state/bootstrap-done" ] && [ "''${1:-}" != "--force" ] && exit 0
 
+    # Suppress DMS first-launch greeter and changelog (we handle onboarding ourselves)
+    mkdir -p "$HOME/.config/DankMaterialShell"
+    touch "$HOME/.config/DankMaterialShell/.firstlaunch"
+    # Create changelog markers for all known versions
+    for v in 1.0 1.1 1.2 1.3 1.4 1.5 2.0; do
+      touch "$HOME/.config/DankMaterialShell/.changelog-$v"
+    done
+
     # Create initial status file so QML can find it
     mkdir -p "$HOME/.local/state"
     echo '{"task0state":"running","task0desc":"Starting...","task1state":"pending","task1desc":"Editor configuration","task2state":"pending","task2desc":"Cloud storage","progress":0.0,"status":"Starting...","wallpapers":[]}' > "$HOME/${statusFile}"
+
+    # Ensure niri has a valid config (home-manager may not have written it yet)
+    if ! ${pkgs.niri}/bin/niri validate 2>/dev/null; then
+      mkdir -p "$HOME/.config/niri"
+      echo 'hotkey-overlay { skip-at-startup }' > "$HOME/.config/niri/config.kdl"
+      ${pkgs.niri}/bin/niri msg action reload-config 2>/dev/null || true
+    fi
 
     # Run bootstrap tasks in background
     sh "${bootstrapScript}" &
 
     # Start quickshell (blocks until user quits)
     ${pkgs.quickshell}/bin/quickshell -p "${qsConfigDir}"
+
+    # Reload niri config now that home-manager and DMS have written their includes
+    ${pkgs.niri}/bin/niri msg action reload-config 2>/dev/null || true
   '';
 
   lazyWallpapers = pkgs.writeShellScript "lazy-wallpapers" ''

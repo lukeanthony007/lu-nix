@@ -52,10 +52,10 @@ Item {
                             x: 16
                             anchors.verticalCenter: parent.verticalCenter
                             width: 28; height: 28; radius: 14
-                            color: modelData.state === "done" ? Qt.rgba(0.29, 0.85, 0.5, 0.2)
-                                 : modelData.state === "running" ? Qt.rgba(0.38, 0.65, 0.98, 0.2)
-                                 : modelData.state === "error" ? Qt.rgba(0.97, 0.44, 0.44, 0.2)
-                                 : Qt.rgba(1, 1, 1, 0.05)
+                            color: modelData.state === "done" ? Qt.rgba(1, 1, 1, 0.12)
+                                 : modelData.state === "running" ? Qt.rgba(1, 1, 1, 0.10)
+                                 : modelData.state === "error" ? Qt.rgba(1, 1, 1, 0.08)
+                                 : Qt.rgba(1, 1, 1, 0.04)
 
                             Text {
                                 anchors.centerIn: parent
@@ -63,10 +63,10 @@ Item {
                                     : modelData.state === "running" ? "●"
                                     : modelData.state === "error" ? "✕"
                                     : "○"
-                                color: modelData.state === "done" ? "#4ade80"
-                                     : modelData.state === "running" ? "#60a5fa"
-                                     : modelData.state === "error" ? "#f87171"
-                                     : Qt.rgba(1, 1, 1, 0.3)
+                                color: modelData.state === "done" ? Qt.rgba(1, 1, 1, 0.9)
+                                     : modelData.state === "running" ? Qt.rgba(1, 1, 1, 0.7)
+                                     : modelData.state === "error" ? Qt.rgba(1, 1, 1, 0.5)
+                                     : Qt.rgba(1, 1, 1, 0.2)
                                 font.pixelSize: 13
                             }
                         }
@@ -192,11 +192,7 @@ Item {
                 height: parent.height
                 radius: 3
 
-                gradient: Gradient {
-                    orientation: Gradient.Horizontal
-                    GradientStop { position: 0.0; color: "#60a5fa" }
-                    GradientStop { position: 1.0; color: "#a78bfa" }
-                }
+                color: Qt.rgba(1, 1, 1, 0.7)
 
                 Behavior on width { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
             }

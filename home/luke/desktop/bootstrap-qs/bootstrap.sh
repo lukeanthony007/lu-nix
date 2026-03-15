@@ -158,4 +158,8 @@ else
                  "0.66" "cloud" "$WP_JSON"
 fi
 
+# Mark DMS first-launch as complete so its greeter doesn't show
+mkdir -p "$HOME/.config/DankMaterialShell"
+touch "$HOME/.config/DankMaterialShell/.firstlaunch"
+
 echo "[done] bootstrap.sh finished"

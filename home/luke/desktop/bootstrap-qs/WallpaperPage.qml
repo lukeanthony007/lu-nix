@@ -64,7 +64,7 @@ Item {
                             radius: 12
                             clip: true
                             border.width: root.selectedWallpaperIndex === index ? 3 : 0
-                            border.color: "#60a5fa"
+                            border.color: Qt.rgba(1, 1, 1, 0.8)
                             color: Qt.rgba(1, 1, 1, 0.05)
 
                             Image {
@@ -209,16 +209,12 @@ Item {
             Rectangle {
                 width: 160; height: 44
                 radius: 12
-                gradient: Gradient {
-                    orientation: Gradient.Horizontal
-                    GradientStop { position: 0.0; color: "#60a5fa" }
-                    GradientStop { position: 1.0; color: "#a78bfa" }
-                }
+                color: Qt.rgba(1, 1, 1, 0.85)
 
                 Text {
                     anchors.centerIn: parent
                     text: "Get Started"
-                    color: "white"
+                    color: "#0a0a0a"
                     font.pixelSize: 15
                     font.weight: Font.DemiBold
                 }

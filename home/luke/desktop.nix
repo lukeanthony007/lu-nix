@@ -6,6 +6,7 @@
     ./desktop/dms.nix
     ./desktop/foot.nix
     ./desktop/niri.nix
+    ./desktop/settings.nix
     ./desktop/vscode.nix
   ];
 

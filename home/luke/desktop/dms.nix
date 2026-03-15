@@ -6,19 +6,6 @@
     niri = {
       enableKeybinds = true;
       enableSpawn = false;
-      includes = {
-        enable = true;
-        override = true;
-        originalFileName = "hm";
-        filesToInclude = [
-          "alttab"
-          "binds"
-          "colors"
-          "layout"
-          "outputs"
-          "wpblur"
-        ];
-      };
     };
     settings = builtins.fromJSON (builtins.readFile ../config/dms-settings.json);
     session = {
