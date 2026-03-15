@@ -16,11 +16,22 @@
 ├── crates/core
 ├── flake.nix
 ├── home/luke
+│   ├── dms.nix
+│   ├── editors.nix
+│   ├── foot.nix
+│   ├── git.nix
+│   ├── niri.nix
+│   ├── packages.nix
+│   ├── services.nix
+│   ├── shell.nix
+│   └── vscode.nix
 ├── hosts
+│   ├── desktop
 │   ├── laptop
 │   └── vm-dev
 ├── justfile
 ├── modules
+│   ├── default.nix
 │   ├── base.nix
 │   ├── desktop
 │   ├── dev
@@ -33,9 +44,10 @@
 ## What exists today
 
 - A `nix develop` shell for Rust stable, Rust 2024, Node LTS, and `pnpm`.
-- `nixosConfigurations.vm-dev` as the first real NixOS target.
-- Shared NixOS modules for base system setup, Niri, audio, Docker, SSH, Rust, and TypeScript.
-- Home Manager configuration for the `luke` user, including Niri-related user-space setup.
+- `nixosConfigurations.vm-dev` as the primary NixOS VM target.
+- `nixosConfigurations.desktop` as the real-hardware target with Steam, Jellyfin, and Home Assistant.
+- Shared NixOS modules for base system setup, Niri, DankMaterialShell, audio, Docker, SSH, Rust, and TypeScript.
+- Home Manager configuration for the `luke` user, including Niri, DMS, foot, VS Code, fish, and starship.
 - A placeholder `hosts/laptop` tree for future hardware-specific work.
 
 ## Bootstrap
@@ -69,5 +81,5 @@ The VM user currently has the bootstrap password `luke`. That is acceptable for 
 
 ## Notes
 
-- `flake.lock` is still intentionally absent because `nix` is not available in the current shell session.
 - `hosts/laptop/hardware-configuration.nix` is a placeholder and is not exported in the flake outputs yet.
+- SSH password authentication is disabled; set up public key auth via console login before relying on SSH.

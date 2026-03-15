@@ -34,11 +34,11 @@
   };
 
   programs.git.enable = true;
+  virtualisation.docker.enable = true;
 
   environment.systemPackages = with pkgs; [
     curl
     fd
-    git
     jq
     just
     ripgrep

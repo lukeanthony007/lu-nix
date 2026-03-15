@@ -1,20 +1,7 @@
-{
-  config,
-  lib,
-  ...
-}:
+{ config, lib, ... }:
 {
   imports = [
-    ../../modules/base.nix
-    ../../modules/desktop/audio.nix
-    ../../modules/desktop/dms.nix
-    ../../modules/desktop/fonts.nix
-    ../../modules/desktop/niri.nix
-    ../../modules/dev/rust.nix
-    ../../modules/dev/typescript.nix
-    ../../modules/services/docker.nix
-    ../../modules/services/ssh.nix
-    ../../modules/users/luke.nix
+    ../../modules
   ];
 
   networking.hostName = "vm-dev";
@@ -32,29 +19,6 @@
   services.greetd.settings.initial_session = {
     command = lib.getExe' config.programs.niri.package "niri-session";
     user = "luke";
-  };
-
-  programs.steam.enable = true;
-  programs.gamemode.enable = true;
-
-  services.home-assistant = {
-    enable = true;
-    extraComponents = [
-      "default_config"
-      "met"
-    ];
-    config = {
-      homeassistant = {
-        name = "Home";
-        unit_system = "metric";
-      };
-      default_config = {};
-    };
-  };
-
-  services.jellyfin = {
-    enable = true;
-    openFirewall = true;
   };
 
   services.qemuGuest.enable = true;

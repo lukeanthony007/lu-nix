@@ -1,22 +1,8 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}:
+{ ... }:
 {
   imports = [
+    ../../modules
     ./hardware-configuration.nix
-    ../../modules/base.nix
-    ../../modules/desktop/audio.nix
-    ../../modules/desktop/dms.nix
-    ../../modules/desktop/fonts.nix
-    ../../modules/desktop/niri.nix
-    ../../modules/dev/rust.nix
-    ../../modules/dev/typescript.nix
-    ../../modules/services/docker.nix
-    ../../modules/services/ssh.nix
-    ../../modules/users/luke.nix
   ];
 
   networking.hostName = "desktop";
@@ -42,5 +28,29 @@
   # Logitech C922 webcam
   hardware.logitech.wireless.enable = false;
 
-  services.qemuGuest.enable = false;
+  # Gaming
+  programs.steam.enable = true;
+  programs.gamemode.enable = true;
+
+  # Media
+  services.jellyfin = {
+    enable = true;
+    openFirewall = true;
+  };
+
+  # Home automation
+  services.home-assistant = {
+    enable = true;
+    extraComponents = [
+      "default_config"
+      "met"
+    ];
+    config = {
+      homeassistant = {
+        name = "Home";
+        unit_system = "metric";
+      };
+      default_config = {};
+    };
+  };
 }

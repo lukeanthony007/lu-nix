@@ -17,12 +17,12 @@
     };
 
     dms = {
-      url = "github:AvengeMedia/DankMaterialShell";
+      url = "github:AvengeMedia/DankMaterialShell/stable";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    dgop = {
-      url = "github:AvengeMedia/dgop";
+    dms-plugin-registry = {
+      url = "github:AvengeMedia/dms-plugin-registry";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -143,6 +143,7 @@
               home-manager.sharedModules = [
                 inputs.dms.homeModules.dank-material-shell
                 inputs.dms.homeModules.niri
+                inputs.dms-plugin-registry.modules.default
                 inputs.danksearch.homeModules.dsearch
               ];
               home-manager.extraSpecialArgs = {

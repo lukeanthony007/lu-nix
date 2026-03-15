@@ -9,5 +9,17 @@
     EDITOR = "nvim";
   };
 
-  programs.bash.enable = true;
+  programs.fish = {
+    enable = true;
+    interactiveShellInit = ''
+      set fish_greeting
+    '';
+  };
+
+  programs.starship = {
+    enable = true;
+    enableFishIntegration = true;
+  };
+
+  xdg.configFile."starship.toml".source = ./starship.toml;
 }

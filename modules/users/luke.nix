@@ -1,5 +1,6 @@
 { pkgs, ... }:
 {
+  programs.fish.enable = true;
   users.mutableUsers = true;
 
   users.users.luke = {
@@ -13,6 +14,6 @@
       "wheel"
     ];
     initialPassword = "luke";
-    shell = pkgs.bashInteractive;
+    shell = pkgs.fish;
   };
 }
