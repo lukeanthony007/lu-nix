@@ -120,6 +120,11 @@ in
       binds.movefocus_cycles_fullscreen = true;
 
       # --- Keybinds ---
+      bindr = [
+        "$mod, Super_L, exec, dms ipc call spotlight toggle"
+        "$mod, Super_R, exec, dms ipc call spotlight toggle"
+      ];
+
       bind = [
         # App launchers (focus-or-launch)
         "$mod, Return, exec, focus-window foot"
@@ -149,7 +154,6 @@ in
         "$mod SHIFT, GRAVE, movetoworkspace, special"
         "$mod Alt, Space, togglefloating"
         "Alt, F4, exec, hypr-kill"
-        "$mod, Q, exec, hypr-kill"
         "$mod, X, exec, hypr-kill"
 
         # Workspace navigation
