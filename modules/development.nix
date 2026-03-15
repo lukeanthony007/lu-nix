@@ -1,6 +1,6 @@
 {
   imports = [
-    ./dev/rust.nix
-    ./dev/typescript.nix
+    ./rust.nix
+    ./typescript.nix
   ];
 }

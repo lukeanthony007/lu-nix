@@ -1,11 +1,11 @@
 { inputs, pkgs, ... }:
 {
   imports = [
-    ./dms.nix
-    ./foot.nix
-    ./niri.nix
-    ./services.nix
-    ./vscode.nix
+    ./desktop/dms.nix
+    ./desktop/foot.nix
+    ./desktop/niri.nix
+    ./desktop/services.nix
+    ./desktop/vscode.nix
   ];
 
   home.packages = with pkgs; [
