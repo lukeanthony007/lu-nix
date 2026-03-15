@@ -20,7 +20,7 @@
         ];
       };
     };
-    settings = builtins.fromJSON (builtins.readFile ./dms-settings.json);
+    settings = builtins.fromJSON (builtins.readFile ../config/dms-settings.json);
     session = {
       isLightMode = false;
     };

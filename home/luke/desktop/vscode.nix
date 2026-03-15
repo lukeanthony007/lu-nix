@@ -2,7 +2,7 @@
 {
   home.activation.vscodeSettings = ''
     mkdir -p "$HOME/.config/Code/User"
-    cp -f ${./vscode-settings.json} "$HOME/.config/Code/User/settings.json"
+    cp -f ${../config/vscode-settings.json} "$HOME/.config/Code/User/settings.json"
     chmod 644 "$HOME/.config/Code/User/settings.json"
   '';
 
