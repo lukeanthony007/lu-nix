@@ -51,7 +51,8 @@
       ConditionPathExists = "%h/.local/state/bootstrap-done";
     };
 
-    Install.WantedBy = ["graphical-session.target"];
+    # Disabled — bootstrap handles wallpaper selection now
+    # Install.WantedBy = ["graphical-session.target"];
 
     Service = {
       Type = "oneshot";
