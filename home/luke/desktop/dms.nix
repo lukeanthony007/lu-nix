@@ -60,6 +60,8 @@
     Unit = {
       Before = ["dms.service"];
       Description = "Pre-select random wallpaper before DMS starts";
+      # Skip on first boot — bootstrap handles wallpaper selection
+      ConditionPathExists = "%h/.local/state/bootstrap-done";
     };
 
     Install.WantedBy = ["graphical-session.target"];

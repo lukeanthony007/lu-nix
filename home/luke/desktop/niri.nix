@@ -1,6 +1,8 @@
 { ... }:
 {
   programs.niri.settings = {
+    hotkey-overlay.skip-at-startup = true;
+
     layer-rules = [
       {
         matches = [{ namespace = "^quickshell"; }];
@@ -46,6 +48,10 @@
       {
         matches = [{ app-id = "^obsidian$"; }];
         opacity = 0.95;
+      }
+      {
+        matches = [{ app-id = "^dev\\.lunix\\.bootstrap$"; }];
+        open-fullscreen = true;
       }
     ];
 

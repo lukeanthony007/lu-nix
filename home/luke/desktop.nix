@@ -1,10 +1,11 @@
 { inputs, pkgs, ... }:
 {
   imports = [
+    ./bootstrap.nix
+    ./cloud-sync.nix
     ./desktop/dms.nix
     ./desktop/foot.nix
     ./desktop/niri.nix
-    ./desktop/services.nix
     ./desktop/vscode.nix
   ];
 
@@ -23,7 +24,6 @@
     p7zip
     pavucontrol
     qemu
-    rclone
     unzip
     vscode
   ];
@@ -50,5 +50,17 @@
       name = "Adwaita-dark";
       package = pkgs.adwaita-icon-theme;
     };
+  };
+
+  services.bootstrap.enable = true;
+
+  services.cloud-sync = {
+    enable = true;
+    provider = "b2";
+    remoteName = "cloud";
+    directories = [
+      { remote = "Documents"; local = "Documents"; }
+      { remote = "Pictures";  local = "Pictures"; }
+    ];
   };
 }

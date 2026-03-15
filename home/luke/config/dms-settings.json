@@ -168,7 +168,7 @@
       "type": "regex"
     }
   ],
-  "centeringMode": "index",
+  "centeringMode": "geometric",
   "clockDateFormat": "",
   "lockDateFormat": "",
   "mediaSize": 2,
@@ -629,6 +629,10 @@
         }
       ],
       "centerWidgets": [
+        {
+          "id": "launcherButton",
+          "enabled": true
+        },
         {
           "id": "runningApps",
           "enabled": true
