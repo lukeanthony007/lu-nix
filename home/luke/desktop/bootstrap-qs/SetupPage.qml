@@ -2,18 +2,21 @@ import QtQuick
 import QtQuick.Layouts
 
 Item {
+    id: setupPage
     anchors.fill: parent
 
     Flickable {
         anchors.fill: parent
-        contentHeight: col.implicitHeight + 80
+        anchors.topMargin: 24
+        anchors.bottomMargin: 24
+        contentHeight: col.implicitHeight
         clip: true
+        boundsBehavior: Flickable.StopAtBounds
 
         ColumnLayout {
             id: col
-            anchors.horizontalCenter: parent.horizontalCenter
-            y: Math.max(40, (parent.height - implicitHeight) / 2)
-            width: Math.min(parent.width - 80, 640)
+            x: (setupPage.width - width) / 2
+            width: Math.min(setupPage.width - 60, 580)
             spacing: 0
 
             // Title
