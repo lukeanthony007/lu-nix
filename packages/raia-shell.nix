@@ -7,10 +7,7 @@
 # Requires --impure for local source path access.
 #
 { pkgs
-, raia-shell-src ? builtins.path {
-    path = /home/luke/Source/infra/raia/src/raia-shell;
-    name = "raia-shell-src";
-  }
+, raia-shell-src
 }:
 
 let

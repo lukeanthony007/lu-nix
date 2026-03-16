@@ -39,6 +39,8 @@ The compiled binary only depends on glibc at runtime. No manual host-side build 
 Source: `packages/raia-core.nix`
 Build: handled automatically by `just appliance-build` (requires `--impure` for local source paths)
 
+All source paths are consolidated via a single `srcRoot` variable in `flake.nix`. Package definitions (`packages/raia-core.nix`, `packages/raia-shell.nix`) are fully portable — no hardcoded paths. To build on a different machine, change `srcRoot` in the flake.
+
 ### raia-core-stub
 
 Minimal socat-based HTTP stub for boot-path validation without the real runtime. Used by the `appliance` NixOS config (for CI/eval). Not used by `appliance-real`.
@@ -168,10 +170,14 @@ Inspect the active context via raia-shell:
 ### Shell behavior after core restart
 
 - Shell tracks core connectivity state and reflects it in the prompt (`[disconnected]`)
+- Connection state updates after any slash command that contacts core (not just `/reconnect` and `/status`)
 - On stream interruption mid-response, partial text is preserved with `[stream interrupted]` marker
+- Stream interruption preserves captured touch context — pending touch ID is not cleared
+- If the `done` event was already processed, a subsequent transport error is treated as harmless
 - If streaming fails before any text arrives, shell falls back to synchronous `/api/cycle/run` automatically
 - When disconnected, shell blocks natural-language input with a clear message (no silent failures)
 - On next input attempt while disconnected, shell tries a quick health check and reconnects automatically
+- If core was unreachable at startup (fallback "default" session), shell upgrades to a real session on first reconnect
 - `/reconnect` — retry core connectivity (3 attempts, 2s intervals) and verify session validity
 - `/status` — shows core connection state and updates the `connected` flag
 - Session continuity: sessions are server-side; after core restart, the existing session ID remains valid
@@ -318,6 +324,12 @@ Supported touch kinds for server-side execution:
 - `fs-write`, `fs-delete`, `fs-move`, `fs-mkdir` — filesystem operations
 - `memory-remember` — vault node creation
 - `gm-*` — general memory operations (get/write/create via vault)
+
+Touch commands validate state before acting:
+- `/execute` on a Proposed touch → tells you to `/confirm` first
+- `/confirm` on an already-Queued touch → tells you to `/execute`
+- `/reject` on a non-Proposed touch → explains which states can be rejected
+- All commands on terminal states (Settled, Failed, Cancelled) → clear messages, no wasted API call
 
 Shell commands: `/confirm`, `/reject`, `/execute`, `/touch`, `/touches`.
 

@@ -18,57 +18,16 @@
 
 { pkgs
 
-# --- Local source paths (all require --impure) ---
-, raia-src ? builtins.path {
-    path = /home/luke/Source/infra/raia;
-    name = "raia-src";
-    filter = path: type:
-      let base = baseNameOf path; in
-      !(base == "node_modules" || base == "target" || base == "build"
-        || base == ".git" || base == ".next" || base == ".turbo");
-  }
-, nayru-src ? builtins.path {
-    path = /home/luke/Source/infra/nayru;
-    name = "nayru-src";
-    filter = path: type:
-      let base = baseNameOf path; in
-      !(base == "target" || base == ".git");
-  }
-, aether-src ? builtins.path {
-    path = /home/luke/Source/infra/aether;
-    name = "aether-src";
-    filter = path: type:
-      let base = baseNameOf path; in
-      !(base == "target" || base == ".git");
-  }
-, anima-src ? builtins.path {
-    path = /home/luke/Source/infra/anima;
-    name = "anima-src";
-    filter = path: type:
-      let base = baseNameOf path; in
-      !(base == "target" || base == ".git" || base == "node_modules");
-  }
-, materia-src ? builtins.path {
-    path = /home/luke/Source/infra/materia;
-    name = "materia-src";
-    filter = path: type:
-      let base = baseNameOf path; in
-      !(base == "target" || base == ".git" || base == "node_modules");
-  }
-, mana-src ? builtins.path {
-    path = /home/luke/Source/infra/mana;
-    name = "mana-src";
-    filter = path: type:
-      let base = baseNameOf path; in
-      !(base == "target" || base == ".git");
-  }
-, mythra-src ? builtins.path {
-    path = /home/luke/Source/infra/mythra;
-    name = "mythra-src";
-    filter = path: type:
-      let base = baseNameOf path; in
-      !(base == "target" || base == ".git");
-  }
+# Source trees — passed from flake.nix (no hardcoded paths here).
+# All require --impure for local source access.
+, raia-src
+, nayru-src
+, aether-src
+, anima-src
+, materia-src
+, mana-src
+, mythra-src
+, cargoLockFile
 }:
 
 let
@@ -146,8 +105,7 @@ EOF
     src = rustWorkspace;
     sourceRoot = "raia-rust-workspace/raia";
 
-    # Use the workspace Cargo.lock directly (impure path, read at eval time)
-    cargoLock.lockFile = /home/luke/Source/infra/raia/Cargo.lock;
+    cargoLock.lockFile = cargoLockFile;
 
     cargoBuildFlags = [ "-p" "raia-kernel-node" ];
 

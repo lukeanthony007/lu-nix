@@ -134,16 +134,43 @@
             }
           ];
         };
+      # --- Build-machine source root (all sibling repos; requires --impure) ---
+      # Change this single path for a different machine layout.
+      srcRoot = /home/luke/Source/infra;
+
+      srcFilter = excl: path: type:
+        let base = baseNameOf path; in
+        !(builtins.elem base (["target" ".git"] ++ excl));
+
+      mkSrc = name: rel: excl: builtins.path {
+        path = srcRoot + "/${rel}";
+        inherit name;
+        filter = srcFilter excl;
+      };
+
       # --- Raia appliance packages ---
 
       # raia-core stub for boot-path validation (fallback when real core unavailable)
       raia-core-stub = import ./packages/raia-core-stub.nix { inherit pkgs; };
 
       # Real raia-shell built from source (requires --impure)
-      raia-shell-pkg = import ./packages/raia-shell.nix { inherit pkgs; };
+      raia-shell-pkg = import ./packages/raia-shell.nix {
+        inherit pkgs;
+        raia-shell-src = mkSrc "raia-shell-src" "raia/src/raia-shell" [];
+      };
 
       # Real raia-core built from source (requires --impure)
-      raia-core-pkg = import ./packages/raia-core.nix { inherit pkgs; };
+      raia-core-pkg = import ./packages/raia-core.nix {
+        inherit pkgs;
+        cargoLockFile = srcRoot + "/raia/Cargo.lock";
+        raia-src     = mkSrc "raia-src"     "raia"    ["node_modules" "build" ".next" ".turbo"];
+        nayru-src    = mkSrc "nayru-src"    "nayru"   [];
+        aether-src   = mkSrc "aether-src"   "aether"  [];
+        anima-src    = mkSrc "anima-src"    "anima"   ["node_modules"];
+        materia-src  = mkSrc "materia-src"  "materia" ["node_modules"];
+        mana-src     = mkSrc "mana-src"     "mana"    [];
+        mythra-src   = mkSrc "mythra-src"   "mythra"  [];
+      };
 
       # Appliance host builder — separate from mkHost because it needs
       # different specialArgs and does not include zen-browser or DMS.
