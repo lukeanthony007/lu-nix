@@ -168,7 +168,7 @@ in
       bind = $mod SHIFT, Return, exec, focus-window -n foot
       bind = $mod SHIFT, C, exec, focus-window -n code --password-store=gnome --enable-features=UseOzonePlatform --ozone-platform=wayland
       bind = $mod SHIFT, E, exec, focus-window -n nautilus
-      bind = $mod SHIFT, W, exec, focus-window -n zen-browser -P Personal
+      bind = $mod SHIFT, W, exec, focus-window -n zen-beta -P Personal
 
       # Window management
       bind = $mod, Tab, workspace, previous
