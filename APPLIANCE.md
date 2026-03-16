@@ -26,15 +26,16 @@ Standalone Cargo files: `packages/raia-shell/Cargo.toml`, `packages/raia-shell/C
 
 ### raia-core
 
-Wrapped pre-built binary. Built outside Nix via `bun build --compile`, which produces a self-contained executable embedding:
-- Bun runtime
-- All TypeScript source (core.ts + raia-cognition stack)
-- NAPI native module (raia-kernel-node, ~216MB .node module)
+Built entirely from source via a multi-stage Nix build:
 
-The compiled binary only depends on glibc at runtime.
+1. **Stage 1 — Rust NAPI module**: Assembles the full Cargo workspace (raia + nayru, aether, anima, materia, mana, mythra) and builds `raia-kernel-node` as a cdylib `.node` file via `rustPlatform.buildRustPackage`.
+2. **Stage 2 — npm dependencies**: Fixed-output derivation runs `bun install --frozen-lockfile` with network access, pinned by content hash. Preserves bun's symlink-based module resolution.
+3. **Stage 3 — Bun compile**: Combines TypeScript source + NAPI module + node_modules. Runs `bun build --compile` to produce a self-contained ~154MB binary embedding Bun runtime, all JS/TS source, and the NAPI module.
+
+The compiled binary only depends on glibc at runtime. No manual host-side build step is required.
 
 Source: `packages/raia-core.nix`
-Build command: `just raia-core-build` (runs `bun build --compile` in raia repo)
+Build: handled automatically by `just appliance-build` (requires `--impure` for local source paths)
 
 ### raia-core-stub
 
@@ -46,20 +47,12 @@ Source: `packages/raia-core-stub.nix`
 
 ### Real appliance (recommended)
 
-Builds both raia-shell and raia-core from source, then builds the VM with real runtime:
+Builds raia-shell and raia-core from source, then builds the VM with real runtime. Everything is built by Nix — no manual host-side build steps:
 
 ```bash
 just appliance-run          # build + run (fresh disk)
 just appliance-run-persist  # build + run (keep disk state)
-```
-
-Individual build steps:
-
-```bash
-just raia-shell-build   # cargo build raia-shell
-just raia-core-build    # bun compile raia-core
-just raia-build         # both
-just appliance-build    # build VM (requires raia-build first, runs --impure)
+just appliance-build        # build VM only (runs --impure for local source paths)
 ```
 
 ### Stub appliance (for eval/CI)
@@ -137,8 +130,10 @@ Inspect the active context via raia-shell:
 
 ### Shell behavior after core restart
 
+- Shell uses token-level streaming (NDJSON over `/api/cycle/run/stream`) for live text rendering
 - Shell detects core unavailability on next input attempt
 - Prints diagnostic: "core is unreachable — check that the server is running on :4111"
+- Stream failures fall back gracefully — partial text is preserved, error shown inline
 - Shell stays open — user can retry when core comes back
 - `/reconnect` — explicitly re-check core and session state
 - `/status` — shows core connection state
@@ -206,8 +201,8 @@ raia-core and raia-shell function locally. If external API calls fail (e.g., Ant
 - System fonts
 - Networking (NetworkManager)
 - SSH
-- `raia-core` service (real packaged runtime)
-- `raia-shell` binary (built from source)
+- `raia-core` service (built from source — Rust NAPI + Bun compile)
+- `raia-shell` binary (built from source — Rust)
 - `raia-provision` tool
 
 ### Stripped (vs. desktop profile)
@@ -240,6 +235,6 @@ home/luke/appliance/provision.nix   # First-boot provisioning check service
 packages/raia-shell.nix             # Nix build for raia-shell (from source)
 packages/raia-shell/Cargo.toml      # Standalone Cargo.toml for Nix build
 packages/raia-shell/Cargo.lock      # Lock file for reproducible builds
-packages/raia-core.nix              # Nix wrapper for pre-built raia-core binary
+packages/raia-core.nix              # Multi-stage from-source build (Rust NAPI + npm + Bun compile)
 packages/raia-core-stub.nix         # Stub server for boot-path testing (CI/eval)
 ```

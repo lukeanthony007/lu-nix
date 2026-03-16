@@ -142,7 +142,7 @@
       # Real raia-shell built from source (requires --impure)
       raia-shell-pkg = import ./packages/raia-shell.nix { inherit pkgs; };
 
-      # Real raia-core wrapped from pre-built binary (requires --impure)
+      # Real raia-core built from source (requires --impure)
       raia-core-pkg = import ./packages/raia-core.nix { inherit pkgs; };
 
       # Appliance host builder — separate from mkHost because it needs

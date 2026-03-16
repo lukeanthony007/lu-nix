@@ -35,21 +35,9 @@ appliance-check:
 
 # === Raia Appliance (real runtime) ===
 
-# Build raia-shell from source
-raia-shell-build:
-  cd ../raia && cargo build -p raia-shell --release
-  @echo "raia-shell built: ../raia/target/release/raia-shell"
-
-# Build raia-core binary (Bun compile)
-raia-core-build:
-  cd ../raia && bun install --ignore-scripts 2>/dev/null; bun build --compile src/raia-app/src-tauri/scripts/core-entry.ts --outfile build/bin/raia-core
-  @echo "raia-core built: ../raia/build/bin/raia-core"
-
-# Build both raia binaries
-raia-build: raia-shell-build raia-core-build
-
-# Build the real appliance VM image (requires --impure for local source paths)
-appliance-build: raia-build
+# Build the real appliance VM image (all from source, requires --impure)
+# Nix handles: Rust NAPI module build, npm dep fetch, Bun compile, raia-shell build
+appliance-build:
   nix build .#nixosConfigurations.appliance-real.config.system.build.vm --impure
   @echo "real appliance VM built"
 
