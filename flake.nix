@@ -220,6 +220,11 @@
           ./home/luke/desktop.nix
           ./home/luke/gaming.nix
           ./home/luke/productivity.nix
+          {
+            # Standalone HM has no NixOS user context — set identity explicitly
+            home.username = "luke";
+            home.homeDirectory = "/home/luke";
+          }
         ];
       };
 

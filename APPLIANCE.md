@@ -252,7 +252,7 @@ This controls:
 - greetd auto-login user
 - raia-core service user and home directory (`services.raia-core.user`, `services.raia-core.home`)
 
-The Home Manager configs live in `home/luke/` (source directory name), but they are user-agnostic — the directory name is the source layout, not the runtime identity.
+The Home Manager configs live in `home/luke/` (source directory name), but they are user-agnostic — the directory name is the source layout, not the runtime identity. `home/luke/default.nix` does not set `home.username` or `home.homeDirectory` — these are derived from the NixOS user context, so any `applianceUser` value works without override.
 
 The `services.raia-core` module also accepts direct overrides if needed:
 
@@ -280,7 +280,9 @@ Commands are organized by category (`/help` for full list):
 - **Operations**: `/ops`, `/trace`
 - **System**: `/status`, `/reconnect`, `/diag`, `/quit`
 
-Touch states are color-coded: Proposed (yellow), Queued (cyan), InFlight (blue), Settled (green), Failed (red). Available actions are shown inline after each touch listing.
+Touch states are color-coded: Proposed (yellow), Queued (cyan), InFlight (blue), Settled (green), Failed (red). Available actions are shown inline after each touch listing. `/touch <id>` detail view also uses state colors.
+
+`/status` shows an explicit "idle" indicator when no operation or touch is pending. `/ops` and `/touches` show count headers. `/ops` limits display to the last 10 operations when the list is long.
 
 ## What's included vs. stripped
 
@@ -317,8 +319,8 @@ Touch states are color-coded: Proposed (yellow), Queued (cyan), InFlight (blue),
 Full three-step touch model: propose → confirm → execute.
 
 - **Propose**: Runtime proposes a touch during a cycle. Touch appears as an escalation prompt in the shell.
-- **Confirm**: `/confirm` queues the touch for execution (Proposed → Queued).
-- **Execute**: `/execute` dispatches the touch through the runtime path (Queued → InFlight → Settled/Failed). The server handler performs dispatch, executes the effect, and settles in a single request.
+- **Confirm**: `/confirm` queues the touch for execution (Proposed → Queued). Shows the touch kind being confirmed.
+- **Execute**: `/execute` dispatches the touch through the runtime path (Queued → InFlight → Settled/Failed). The server handler performs dispatch, executes the effect, and settles in a single request. Before dispatch, the shell shows the touch kind and target. After completion, it reports kind and outcome. Failures distinguish transport errors from state rejections.
 
 Supported touch kinds for server-side execution:
 - `fs-write`, `fs-delete`, `fs-move`, `fs-mkdir` — filesystem operations
