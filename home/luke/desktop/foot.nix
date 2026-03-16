@@ -44,6 +44,21 @@
     alpha=0.85
   '';
 
+  # Fix DMS-generated dank-colors.ini: rename deprecated [colors] to [colors-dark]
+  systemd.user.services.foot-fix-colors = {
+    Unit.Description = "Fix foot dank-colors.ini [colors] -> [colors-dark]";
+    Service = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.gnused}/bin/sed -i s/^\\[colors\\]$/[colors-dark]/ %h/.config/foot/dank-colors.ini";
+    };
+  };
+
+  systemd.user.paths.foot-fix-colors = {
+    Unit.Description = "Watch for DMS foot color changes";
+    Path.PathChanged = "%h/.config/foot/dank-colors.ini";
+    Install.WantedBy = ["graphical-session.target"];
+  };
+
   systemd.user.services.foot-autostart = {
     Unit = {
       After = ["hyprland-session.target" "dms.service"];

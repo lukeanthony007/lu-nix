@@ -102,8 +102,17 @@ in
       dwindle.preserve_split = true;
       master.mfact = 0.5;
 
+      # --- General ---
+      general = {
+        gaps_in = 10;
+        gaps_out = 15;
+        border_size = 0;
+        layout = "dwindle";
+      };
+
       # --- Decoration ---
       decoration = {
+        rounding = 12;
         blur = {
           enabled = true;
           size = 2;
