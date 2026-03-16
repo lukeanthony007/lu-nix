@@ -6,6 +6,7 @@
     fd
     fzf
     ripgrep
+    uv
   ];
 
   home.sessionVariables = {

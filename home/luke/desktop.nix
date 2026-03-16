@@ -29,7 +29,6 @@
     pavucontrol
     qemu
     unzip
-    vscode
   ];
 
   xdg.userDirs = {
