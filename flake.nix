@@ -134,6 +134,43 @@
             }
           ];
         };
+      # --- Raia appliance packages ---
+
+      # raia-core stub for boot-path validation
+      raia-core-stub = import ./packages/raia-core-stub.nix { inherit pkgs; };
+
+      # Appliance host builder — separate from mkHost because it needs
+      # different specialArgs and does not include zen-browser or DMS.
+      mkAppliance = { raia-core-command ? "${raia-core-stub}/bin/raia-core-stub"
+                    , raia-shell-package ? pkgs.hello  # placeholder; override with real package
+                    }:
+        nixpkgs.lib.nixosSystem {
+          inherit system;
+
+          specialArgs = {
+            inherit inputs nodejs rustToolchain self;
+            inherit raia-core-command raia-shell-package;
+          };
+
+          modules = [
+            home-manager.nixosModules.home-manager
+            ./hosts/appliance
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+              home-manager.extraSpecialArgs = {
+                inherit inputs nodejs rustToolchain self;
+              };
+              home-manager.users.luke = {
+                imports = [
+                  ./home/luke
+                  ./home/luke/appliance.nix
+                ];
+              };
+            }
+          ];
+        };
+
     in {
       # Standalone Home Manager for Arch (or any non-NixOS host)
       homeConfigurations.luke = home-manager.lib.homeManagerConfiguration {
@@ -167,5 +204,8 @@
           ./home/luke/productivity.nix
         ];
       };
+
+      # Raia continuity appliance (stub core for boot-path validation)
+      nixosConfigurations.appliance = mkAppliance {};
     });
 }
