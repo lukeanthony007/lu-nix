@@ -6,12 +6,10 @@
 #   Stage 2: Fetch npm dependencies (fixed-output derivation via bun install)
 #   Stage 3: Bun compile — self-contained binary embedding runtime + JS + NAPI
 #
-# The full Cargo workspace spans 7 repos (raia + aether, anima, materia,
-# mana, mythra, nayru). Stage 1 assembles them in a parent directory that
-# preserves the sibling-repo topology Cargo expects. Repos with their own
-# [workspace] (aether, anima, materia) get minimal workspace manifests to
-# avoid Cargo nested-workspace conflicts. Nayru stays as a true sibling
-# (referenced via ../nayru in the raia Cargo.toml).
+# The Cargo workspace lives at the infra root with all repos as direct
+# siblings. Repos with their own [workspace] (aether, anima, materia) get
+# minimal workspace manifests to avoid Cargo nested-workspace conflicts.
+# Nayru keeps its own workspace for inherited deps (regex, cpal, rodio).
 #
 # Requires --impure for local source path access.
 #
@@ -21,6 +19,11 @@
 # Source trees — passed from flake.nix (no hardcoded paths here).
 # All require --impure for local source access.
 , raia-src
+, raia-app-src
+, raia-cognition-src
+, raia-kernel-src
+, raia-kernel-node-src
+, raia-shell-src
 , nayru-src
 , aether-src
 , anima-src
@@ -28,71 +31,77 @@
 , mana-src
 , mythra-src
 , cargoLockFile
+, workspace-cargo-toml
 }:
 
 let
   # ── Stage 1: Rust NAPI module ─────────────────────────────────────────────
 
-  # Assemble the full Cargo workspace preserving sibling-repo topology.
-  #
-  # Layout mirrors the real development structure:
-  #   $out/raia/         — main workspace (Cargo.toml here)
-  #   $out/nayru/        — sibling (../nayru path deps work naturally)
-  #   $out/raia/repos/   — external crates (aether, anima, materia, mana, mythra)
-  #
-  # Repos that have their own [workspace] (aether, anima, materia) get
-  # minimal workspace Cargo.toml files listing only the crates raia needs.
-  # This prevents Cargo from seeing nested workspace conflicts while still
-  # resolving `version.workspace = true` etc. in those crates.
-  #
-  # Nayru stays as a sibling because its crates use workspace-inherited deps
-  # (regex, cpal, rodio, etc.) that must resolve from nayru's own workspace.
+  # Assemble the Cargo workspace mirroring the flat infra/ layout:
+  #   $out/              — workspace root (Cargo.toml here)
+  #   $out/raia/         — raia source (TS, raia-app, package.json)
+  #   $out/raia-kernel/  — kernel crate
+  #   $out/raia-kernel-node/ — NAPI bindings crate
+  #   $out/raia-shell/   — shell crate (workspace member)
+  #   $out/nayru/        — sibling (keeps own workspace for inherited deps)
+  #   $out/aether/       — sibling (stub workspace + aether-core)
+  #   $out/anima/        — sibling (stub workspace + anima-core)
+  #   $out/materia/      — sibling (stub workspace + materia-core)
+  #   $out/mana/         — workspace member
+  #   $out/mythra/       — workspace member
   rustWorkspace = pkgs.runCommand "raia-rust-workspace" {} ''
-    mkdir -p $out/raia $out/nayru
+    mkdir -p $out
 
-    # Copy raia workspace root (filtered — no node_modules/target/build)
+    # Workspace root
+    cp ${workspace-cargo-toml} $out/Cargo.toml
+
+    # Raia source (TS root — package.json, bun.lock, scripts)
     cp -rT ${raia-src} $out/raia
     chmod -R u+w $out/raia
 
-    # Copy nayru as sibling — its crates use workspace-inherited deps
+    # Raia app (Next.js/Tauri — workspace member raia-app/src-tauri)
+    cp -rT ${raia-app-src} $out/raia-app
+
+    # Extracted Rust crates
+    cp -rT ${raia-kernel-src} $out/raia-kernel
+    cp -rT ${raia-kernel-node-src} $out/raia-kernel-node
+    cp -rT ${raia-shell-src} $out/raia-shell
+
+    # Nayru — keeps own workspace for inherited deps (regex, cpal, rodio)
     cp -rT ${nayru-src} $out/nayru
 
-    # --- Build repos/ with real source ---
-    rm -rf $out/raia/repos
-    mkdir -p $out/raia/repos
-
-    # aether — only aether-core needed (hardcoded deps, no workspace inheritance)
-    mkdir -p $out/raia/repos/aether/crates
-    cp -rT ${aether-src}/crates/aether-core $out/raia/repos/aether/crates/aether-core
+    # aether — only aether-core needed; stub workspace to avoid nested conflicts
+    mkdir -p $out/aether/crates
+    cp -rT ${aether-src}/crates/aether-core $out/aether/crates/aether-core
     # Stub test files referenced by aether-core [[test]] sections
-    mkdir -p $out/raia/repos/aether/tests/integration $out/raia/repos/aether/tests/benchmarks
-    touch $out/raia/repos/aether/tests/integration/storage_test.rs
-    touch $out/raia/repos/aether/tests/integration/pipeline_test.rs
-    touch $out/raia/repos/aether/tests/benchmarks/throughput.rs
-    cat > $out/raia/repos/aether/Cargo.toml << 'EOF'
+    mkdir -p $out/aether/tests/integration $out/aether/tests/benchmarks
+    touch $out/aether/tests/integration/storage_test.rs
+    touch $out/aether/tests/integration/pipeline_test.rs
+    touch $out/aether/tests/benchmarks/throughput.rs
+    cat > $out/aether/Cargo.toml << 'EOF'
 [workspace]
 members = ["crates/aether-core"]
 EOF
 
-    # anima — only anima-core needed (hardcoded deps)
-    mkdir -p $out/raia/repos/anima/crates
-    cp -rT ${anima-src}/crates/anima-core $out/raia/repos/anima/crates/anima-core
-    cat > $out/raia/repos/anima/Cargo.toml << 'EOF'
+    # anima — only anima-core needed; stub workspace
+    mkdir -p $out/anima/crates
+    cp -rT ${anima-src}/crates/anima-core $out/anima/crates/anima-core
+    cat > $out/anima/Cargo.toml << 'EOF'
 [workspace]
 members = ["crates/anima-core"]
 EOF
 
-    # materia — only materia-core needed (hardcoded deps)
-    mkdir -p $out/raia/repos/materia/crates
-    cp -rT ${materia-src}/crates/materia-core $out/raia/repos/materia/crates/materia-core
-    cat > $out/raia/repos/materia/Cargo.toml << 'EOF'
+    # materia — only materia-core needed; stub workspace
+    mkdir -p $out/materia/crates
+    cp -rT ${materia-src}/crates/materia-core $out/materia/crates/materia-core
+    cat > $out/materia/Cargo.toml << 'EOF'
 [workspace]
 members = ["crates/materia-core"]
 EOF
 
-    # mana, mythra — raia workspace members (no [workspace] of their own)
-    cp -rT ${mana-src} $out/raia/repos/mana
-    cp -rT ${mythra-src} $out/raia/repos/mythra
+    # mana, mythra — workspace members (no [workspace] of their own)
+    cp -rT ${mana-src} $out/mana
+    cp -rT ${mythra-src} $out/mythra
   '';
 
   # Build the NAPI cdylib (.node file) from the assembled Rust workspace.
@@ -103,7 +112,7 @@ EOF
     version = "0.1.0";
 
     src = rustWorkspace;
-    sourceRoot = "raia-rust-workspace/raia";
+    sourceRoot = "raia-rust-workspace";
 
     cargoLock.lockFile = cargoLockFile;
 
@@ -146,11 +155,13 @@ EOF
       #   "../materia/crates/materia-node"
       #   "../anima/crates/anima-node"
       #   "../anima/packages/anima-context"
-      #   "src/raia-kernel-node"
-      mkdir -p raia/src/raia-kernel-node
+      #   "../raia-kernel-node"
+      mkdir -p raia
       cp ${raia-src}/package.json raia/
       cp ${raia-src}/bun.lock raia/
-      cp ${raia-src}/src/raia-kernel-node/package.json raia/src/raia-kernel-node/
+
+      mkdir -p raia-kernel-node
+      cp ${raia-kernel-node-src}/package.json raia-kernel-node/
 
       mkdir -p materia/crates/materia-node
       cp ${materia-src}/crates/materia-node/package.json materia/crates/materia-node/
@@ -187,6 +198,10 @@ pkgs.stdenv.mkDerivation {
   buildPhase = ''
     export HOME=$TMPDIR
 
+    # Place extracted sibling repos where raia's TS imports expect them
+    cp -rT ${raia-app-src} ../raia-app
+    cp -rT ${raia-cognition-src} ../raia-cognition
+
     # Install pre-fetched node_modules
     cp -r ${npmDeps} node_modules
     chmod -R u+w node_modules
@@ -195,9 +210,9 @@ pkgs.stdenv.mkDerivation {
     rm -rf node_modules/@raia/kernel-node
     mkdir -p node_modules/@raia/kernel-node
     cp ${napiModule}/kernel-node.linux-x64-gnu.node node_modules/@raia/kernel-node/
-    cp src/raia-kernel-node/index.js node_modules/@raia/kernel-node/
-    cp src/raia-kernel-node/index.d.ts node_modules/@raia/kernel-node/ 2>/dev/null || true
-    cp src/raia-kernel-node/package.json node_modules/@raia/kernel-node/
+    cp ${raia-kernel-node-src}/index.js node_modules/@raia/kernel-node/
+    cp ${raia-kernel-node-src}/index.d.ts node_modules/@raia/kernel-node/ 2>/dev/null || true
+    cp ${raia-kernel-node-src}/package.json node_modules/@raia/kernel-node/
 
     # Replace other workspace symlinks with their source
     rm -rf node_modules/@raia/materia-node
@@ -212,7 +227,7 @@ pkgs.stdenv.mkDerivation {
 
     # Build self-contained binary
     # keytar (native keychain addon) and ffmpeg-static (Discord voice) are not needed at runtime
-    bun build --compile src/raia-app/src-tauri/scripts/core-entry.ts \
+    bun build --compile ../raia-app/src-tauri/scripts/core-entry.ts \
       --external keytar --external ffmpeg-static \
       --outfile raia-core
   '';
