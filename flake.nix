@@ -166,20 +166,13 @@
       # Real raia-core built from source (requires --impure)
       raia-core-pkg = import ./packages/raia-core.nix {
         inherit pkgs;
-        cargoLockFile        = srcRoot + "/Cargo.lock";
-        workspace-cargo-toml = srcRoot + "/Cargo.toml";
-        raia-src             = mkSrc "raia-src"             "raia"             ["node_modules" "build" ".next" ".turbo"];
-        raia-app-src         = mkSrc "raia-app-src"         "raia-app"         [".next" "out" "node_modules"];
-        raia-cognition-src   = mkSrc "raia-cognition-src"   "raia-cognition"   [];
-        raia-kernel-src      = mkSrc "raia-kernel-src"      "raia-kernel"      [];
-        raia-kernel-node-src = mkSrc "raia-kernel-node-src" "raia-kernel-node" [];
-        osh-src              = mkSrc "osh-src"               "osh"              [];
-        nayru-src            = mkSrc "nayru-src"            "nayru"            [];
-        aether-src           = mkSrc "aether-src"           "aether"           [];
-        anima-src            = mkSrc "anima-src"            "anima"            ["node_modules"];
-        materia-src          = mkSrc "materia-src"          "materia"          ["node_modules"];
-        mana-src             = mkSrc "mana-src"             "mana"             [];
-        mythra-src           = mkSrc "mythra-src"           "mythra"           [];
+        raia-src    = mkSrc "raia-src"    "raia"    ["target" "node_modules"];
+        nayru-src   = mkSrc "nayru-src"   "nayru"   [];
+        aether-src  = mkSrc "aether-src"  "aether"  [];
+        anima-src   = mkSrc "anima-src"   "anima"   ["node_modules"];
+        materia-src = mkSrc "materia-src" "materia" ["node_modules"];
+        mana-src    = mkSrc "mana-src"    "mana"    [];
+        mythra-src  = mkSrc "mythra-src"  "mythra"  [];
       };
 
       # Appliance host builder — separate from mkHost because it needs
