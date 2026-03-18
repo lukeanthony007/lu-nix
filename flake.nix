@@ -95,7 +95,7 @@
           shellHook = ''
             export PATH="$PWD/node_modules/.bin:$PATH"
 
-            echo "lu-nix dev shell"
+            echo "lunix dev shell"
             echo "Rust: $(rustc --version)"
             echo "Node: $(node --version)"
             echo "pnpm: $(pnpm --version)"
@@ -157,10 +157,10 @@
       # raia-core stub for boot-path validation (fallback when real core unavailable)
       raia-core-stub = import ./packages/raia-core-stub.nix { inherit pkgs; };
 
-      # Real raia-shell built from source (requires --impure)
-      raia-shell-pkg = import ./packages/raia-shell.nix {
+      # Real osh (operator shell) built from source (requires --impure)
+      osh-pkg = import ./packages/osh.nix {
         inherit pkgs;
-        raia-shell-src = mkSrc "raia-shell-src" "raia-shell" [];
+        osh-src = mkSrc "osh-src" "osh" [];
       };
 
       # Real raia-core built from source (requires --impure)
@@ -173,7 +173,7 @@
         raia-cognition-src   = mkSrc "raia-cognition-src"   "raia-cognition"   [];
         raia-kernel-src      = mkSrc "raia-kernel-src"      "raia-kernel"      [];
         raia-kernel-node-src = mkSrc "raia-kernel-node-src" "raia-kernel-node" [];
-        raia-shell-src       = mkSrc "raia-shell-src"       "raia-shell"       [];
+        osh-src              = mkSrc "osh-src"               "osh"              [];
         nayru-src            = mkSrc "nayru-src"            "nayru"            [];
         aether-src           = mkSrc "aether-src"           "aether"           [];
         anima-src            = mkSrc "anima-src"            "anima"            ["node_modules"];
@@ -185,7 +185,7 @@
       # Appliance host builder — separate from mkHost because it needs
       # different specialArgs and does not include zen-browser or DMS.
       mkAppliance = { raia-core-command ? "${raia-core-stub}/bin/raia-core-stub"
-                    , raia-shell-package ? pkgs.hello  # placeholder; override with real package
+                    , osh-package ? pkgs.hello  # placeholder; override with real package
                     , hostPath ? ./hosts/appliance
                     , applianceUser ? "luke"
                     }:
@@ -194,7 +194,7 @@
 
           specialArgs = {
             inherit inputs nodejs rustToolchain self;
-            inherit raia-core-command raia-shell-package applianceUser;
+            inherit raia-core-command osh-package applianceUser;
           };
 
           modules = [
@@ -261,14 +261,14 @@
       # Raia continuity appliance — real runtime (requires --impure)
       nixosConfigurations.appliance-real = mkAppliance {
         raia-core-command = "${raia-core-pkg}/bin/raia-core";
-        raia-shell-package = raia-shell-pkg;
+        osh-package = osh-pkg;
       };
 
       # Raia continuity appliance — bare-metal target (requires --impure)
       nixosConfigurations.appliance-bare = mkAppliance {
         hostPath = ./hosts/appliance-bare;
         raia-core-command = "${raia-core-pkg}/bin/raia-core";
-        raia-shell-package = raia-shell-pkg;
+        osh-package = osh-pkg;
       };
     });
 }

@@ -1,13 +1,13 @@
 [package]
-name = "raia-shell"
+name = "osh"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.85"
 license = "MIT"
-description = "Text-mode Raia Shell — the first human shell over the continuity runtime"
+description = "OSH — the operator shell over the continuity runtime"
 
 [[bin]]
-name = "raia-shell"
+name = "osh"
 path = "src/main.rs"
 
 [dependencies]

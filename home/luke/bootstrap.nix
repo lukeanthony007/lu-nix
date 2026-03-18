@@ -7,7 +7,7 @@ let
   bootstrapScript = "${qsConfigDir}/bootstrap.sh";
   statusFile = ".local/state/bootstrap-status.json";
 
-  bootstrapApp = pkgs.writeShellScriptBin "lu-nix-bootstrap" ''
+  bootstrapApp = pkgs.writeShellScriptBin "lunix-bootstrap" ''
     export PATH="${lib.makeBinPath (with pkgs; [ coreutils findutils gawk git iputils jq ])}:$PATH"
 
     # Check marker
@@ -76,7 +76,7 @@ in
 
       Service = {
         Type = "oneshot";
-        ExecStart = "${bootstrapApp}/bin/lu-nix-bootstrap";
+        ExecStart = "${bootstrapApp}/bin/lunix-bootstrap";
         Environment = [
           "WAYLAND_DISPLAY=wayland-1"
           "XDG_RUNTIME_DIR=%t"

@@ -23,7 +23,7 @@
 , raia-cognition-src
 , raia-kernel-src
 , raia-kernel-node-src
-, raia-shell-src
+, osh-src
 , nayru-src
 , aether-src
 , anima-src
@@ -42,7 +42,7 @@ let
   #   $out/raia/         — raia source (TS, raia-app, package.json)
   #   $out/raia-kernel/  — kernel crate
   #   $out/raia-kernel-node/ — NAPI bindings crate
-  #   $out/raia-shell/   — shell crate (workspace member)
+  #   $out/osh/          — shell crate (workspace member)
   #   $out/nayru/        — sibling (keeps own workspace for inherited deps)
   #   $out/aether/       — sibling (stub workspace + aether-core)
   #   $out/anima/        — sibling (stub workspace + anima-core)
@@ -65,7 +65,7 @@ let
     # Extracted Rust crates
     cp -rT ${raia-kernel-src} $out/raia-kernel
     cp -rT ${raia-kernel-node-src} $out/raia-kernel-node
-    cp -rT ${raia-shell-src} $out/raia-shell
+    cp -rT ${osh-src} $out/osh
 
     # Nayru — keeps own workspace for inherited deps (regex, cpal, rodio)
     cp -rT ${nayru-src} $out/nayru

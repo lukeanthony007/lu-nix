@@ -1,4 +1,4 @@
-{ config, pkgs, lib, raia-core-command, raia-shell-package, applianceUser ? "luke", ... }:
+{ config, pkgs, lib, raia-core-command, osh-package, applianceUser ? "luke", ... }:
 
 #
 # Raia Continuity Appliance — host profile
@@ -76,7 +76,7 @@
   services.raia-core = {
     enable = true;
     coreCommand = raia-core-command;
-    shellPackage = raia-shell-package;
+    shellPackage = osh-package;
   };
 
   # --- Appliance-specific: strip workstation extras ---
