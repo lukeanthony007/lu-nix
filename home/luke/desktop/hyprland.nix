@@ -296,5 +296,11 @@ in
       match:class = com.libretro.RetroArch
       render_unfocused = on
     }
+    windowrule {
+      name = osh-special
+      match:class = osh-desktop
+      workspace = special silent
+      render_unfocused = on
+    }
   '';
 }

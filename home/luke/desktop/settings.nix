@@ -4,7 +4,7 @@ let
   qsConfigDir = ./settings-app;
 
   settingsApp = pkgs.writeShellScriptBin "lunix-settings" ''
-    exec ${pkgs.quickshell}/bin/quickshell -p "${qsConfigDir}"
+    exec quickshell -p "${qsConfigDir}"
   '';
 in
 {

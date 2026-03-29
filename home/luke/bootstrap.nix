@@ -39,7 +39,7 @@ let
     sh "${bootstrapScript}" &
 
     # Start quickshell (blocks until user quits)
-    ${pkgs.quickshell}/bin/quickshell -p "${qsConfigDir}"
+    quickshell -p "${qsConfigDir}"
 
   '';
 
