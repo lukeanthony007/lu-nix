@@ -9,6 +9,7 @@
         anthropic.claude-code
         jnoortheen.nix-ide
         skellock.just
+        tamasfe.even-better-toml
         usernamehw.errorlens
       ] ++ (with pkgs.vscode-utils; [
         (extensionFromVscodeMarketplace {
@@ -136,6 +137,7 @@
           "minimap.background" = "#000000";
           "peekViewEditor.background" = "#000000";
         };
+
 
         # Misc
         "debug.inlineValues" = "on";

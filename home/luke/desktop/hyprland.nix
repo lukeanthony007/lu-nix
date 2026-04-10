@@ -56,7 +56,7 @@ in
       [ -f "$HOME/.config/hypr/dms/$f.conf" ] || touch "$HOME/.config/hypr/dms/$f.conf"
     done
     mkdir -p "$HOME/.config/hypr/custom"
-    for f in general cursor binds rules; do
+    for f in general cursor binds rules execs; do
       [ -f "$HOME/.config/hypr/custom/$f.conf" ] || touch "$HOME/.config/hypr/custom/$f.conf"
     done
   '';
@@ -86,6 +86,7 @@ in
       source = ~/.config/hypr/custom/cursor.conf
       source = ~/.config/hypr/custom/binds.conf
       source = ~/.config/hypr/custom/rules.conf
+      source = ~/.config/hypr/custom/execs.conf
     '';
   };
 
@@ -237,6 +238,17 @@ in
     # Zoom (mouse buttons)
     bind = , mouse:276, exec, hypr-zoom in 0.5
     bind = , mouse:275, exec, hypr-zoom out
+  '';
+
+  home.file.".config/hypr/custom/execs.conf".text = ''
+    # exec-once = cd "/home/luke/Source/vigil" && bun start
+    # exec-once = cd "/home/luke/Source/daemira" && bun start keepSystemUpdated --notify
+    exec-once = cd "/home/luke/Source/personal/ariya-bot" && bun start
+    # exec-once = cd "/home/luke/Source/ariya-bot-dev" && bun start
+    # exec-once = clawdbot node run
+    # exec-once = pocket-tts serve
+    # exec-once = ollama serve
+    # exec-once = cd "/home/luke/Source/raia-dashboard" && bun run dev
   '';
 
   home.file.".config/hypr/custom/rules.conf".text = ''
