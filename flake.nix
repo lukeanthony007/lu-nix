@@ -210,26 +210,11 @@
         };
 
     in {
-      # Standalone Home Manager for Arch (or any non-NixOS host)
-      homeConfigurations.luke = home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
-
-        extraSpecialArgs = {
-          inherit inputs nodejs rustToolchain self;
-        };
-
-        modules = homeModulesShared ++ [
-          ./home/luke
-          ./home/luke/desktop.nix
-          ./home/luke/gaming.nix
-          ./home/luke/productivity.nix
-          {
-            # Standalone HM has no NixOS user context — set identity explicitly
-            home.username = "luke";
-            home.homeDirectory = "/home/luke";
-          }
-        ];
-      };
+      # NOTE: The standalone homeConfigurations.luke block was removed because
+      # this Arch host now manages apps via pacman/AUR. Nix is used here only
+      # for `nix develop` (devShells.default above). The NixOS configurations
+      # below are unchanged — they target VMs and future devices where
+      # Nix-managed GUI apps are appropriate.
 
       # NixOS configurations (kept for VMs and future devices)
       nixosConfigurations.vm-dev = mkHost {
